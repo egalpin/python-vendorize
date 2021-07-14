@@ -1,6 +1,8 @@
 import io
 import os
 import subprocess
+import sys
+import time
 
 from . import python_source
 from ._vendor import pytoml as toml
@@ -73,7 +75,18 @@ def _rewrite_imports_in_module(module_path, top_level_names, depth):
     with io.open(module_path, "r", encoding=encoding, newline='') as source_file:
         source = source_file.read()
 
-    rewritten_source = rewrite_imports_in_module(source, top_level_names, depth)
+    try:
+        rewritten_source = rewrite_imports_in_module(source, top_level_names, depth)
+    except SyntaxError as exc:
+        print("Syntax error from rewrite_imports_in_module for: {}".format(module_path))
+        print("Debug: Begin of source")
+        print(source)
+        print("Debug: End of source")
+        sys.stdout.flush()
+        # Despite the flush, the printed lines and the exception traceback get
+        # intermixed in the GitHub Actions log. Not sure why. We wait a bit.
+        time.sleep(1)
+        raise
 
     with io.open(module_path, "w", encoding=encoding, newline='') as source_file:
         source_file.write(rewritten_source)
