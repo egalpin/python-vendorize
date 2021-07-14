@@ -3,6 +3,7 @@ import tokenize
 import io
 import collections
 import itertools
+import sys
 
 
 def rewrite_imports_in_module(source, top_level_names, depth):
@@ -80,7 +81,11 @@ def rewrite_imports_in_module(source, top_level_names, depth):
             if not node.level and _should_rewrite_import(node.module):
                 replacements.append(_generate_import_from_replacement(node))
 
-    python_ast = ast.parse(source)
+    if sys.version_info[0] == 2 and isinstance(source, unicode):
+        source2 = source.encode('utf-8')
+    else:
+        source2 = source
+    python_ast = ast.parse(source2)
     ImportVisitor().visit(python_ast)
     return _replace_strings(source, replacements)
 
