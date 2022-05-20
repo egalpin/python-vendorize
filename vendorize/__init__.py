@@ -73,6 +73,10 @@ def _rewrite_imports_in_module(module_path, top_level_names, depth):
     with io.open(module_path, "r", encoding=encoding, newline='') as source_file:
         source = source_file.read()
 
+    if not source:
+        # handle empty __init__.py files, for example
+        return
+
     rewritten_source = rewrite_imports_in_module(source, top_level_names, depth)
 
     with io.open(module_path, "w", encoding=encoding, newline='') as source_file:
